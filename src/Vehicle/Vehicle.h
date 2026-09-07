@@ -102,6 +102,7 @@ class Vehicle : public VehicleFactGroup, public VehicleTypes
     Q_MOC_INCLUDE("VehicleLinkManager.h")
     Q_MOC_INCLUDE("VehicleObjectAvoidance.h")
     Q_MOC_INCLUDE("VehicleSupports.h")
+    
 
     friend class InitialConnectStateMachine;
     friend class VehicleLinkManager;
@@ -147,6 +148,8 @@ public:
     Q_PROPERTY(QGeoCoordinate       coordinate                  READ coordinate                                                     NOTIFY coordinateChanged)
     Q_PROPERTY(QGeoCoordinate       homePosition                READ homePosition                                                   NOTIFY homePositionChanged)
     Q_PROPERTY(QGeoCoordinate       armedPosition               READ armedPosition                                                  NOTIFY armedPositionChanged)
+    Q_PROPERTY(QGeoCoordinate       targetPointCoordinate       READ targetPointCoordinate      WRITE setTargetPointCoordinate      NOTIFY targetPointCoordinateChanged)
+    Q_PROPERTY(bool                 targetPointSet              READ targetPointSet                                                 NOTIFY targetPointCoordinateChanged)   
     Q_PROPERTY(bool                 armed                       READ armed                      WRITE setArmedShowError             NOTIFY armedChanged)
     Q_PROPERTY(bool                 autoDisarm                  READ autoDisarm                                                     NOTIFY autoDisarmChanged)
     Q_PROPERTY(bool                 flightModeSetAvailable      READ flightModeSetAvailable                                         CONSTANT)
@@ -402,6 +405,8 @@ public:
     Q_INVOKABLE void doSetHome(const QGeoCoordinate& coord);
 
     Q_INVOKABLE QVariant expandedToolbarIndicatorSource(const QString& indicatorName);
+
+    Q_INVOKABLE void clearTargetPoint() { setTargetPointCoordinate(QGeoCoordinate()); }
 
     bool    isInitialConnectComplete() const;
     QString gotoFlightMode          () const;
@@ -936,6 +941,7 @@ private:
     QGeoCoordinate  _coordinate;
     QGeoCoordinate  _homePosition;
     QGeoCoordinate  _armedPosition;
+    
 
     qreal           _initialGCSPressure = 0.;
     qreal           _initialGCSTemperature = 0.;
@@ -1148,6 +1154,23 @@ signals:
 
 private:
     MessageIntervalManager* _messageIntervalManager = nullptr;
+private:
+    QGeoCoordinate _targetPointCoordinate;
+
+
+/*---------------------------------------------------------------------------*/
+/*===========================================================================*/
+/*                         set Target point                                  */
+/*===========================================================================*/
+public:
+    QGeoCoordinate targetPointCoordinate() const { return _targetPointCoordinate; }
+    bool            targetPointSet()       const { return _targetPointCoordinate.isValid(); }
+
+    Q_INVOKABLE void doSetTargetPoint(QGeoCoordinate targetCoordinate);
+    void setTargetPointCoordinate(const QGeoCoordinate& coordinate);
+
+signals:
+    void targetPointCoordinateChanged(QGeoCoordinate targetPointCoordinate);
 
 /*---------------------------------------------------------------------------*/
 /*===========================================================================*/

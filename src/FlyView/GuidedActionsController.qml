@@ -78,6 +78,8 @@ Item {
     readonly property string setEstimatorOriginMessage:         qsTr("Make the specified location the estimator origin")
     readonly property string setFlightModeMessage:              qsTr("Set the vehicle flight mode to %1").arg(_actionData)
     readonly property string changeHeadingMessage:              qsTr("Set the vehicle heading towards the specified location")
+    readonly property string setTargetPointTitle:   qsTr("Set Target Point")
+    readonly property string setTargetPointMessage: qsTr("Set target point to the selected location?")
 
     readonly property int actionRTL:                        1
     readonly property int actionLand:                       2
@@ -108,6 +110,7 @@ Item {
     readonly property int actionMVArm:                      28
     readonly property int actionMVDisarm:                   29
     readonly property int actionChangeLoiterRadius:         30
+    readonly property int actionSetTargetPoint:             31
 
     readonly property int customActionStart:                10000 // Custom actions ids should start here so that they don't collide with the built in actions
 
@@ -142,6 +145,7 @@ Item {
     property bool showSetHome:              _guidedActionsEnabled
     property bool showSetEstimatorOrigin:   _activeVehicle && !(_activeVehicle.sensorsPresentBits & MAVLinkEnums.MAV_SYS_STATUS_SENSOR_GPS)
     property bool showChangeHeading:        _guidedActionsEnabled && _vehicleFlying
+    property bool showSetTargetPoint:       true 
 
     property string changeSpeedTitle:   _vehicleInFwdFlight ? changeAirspeedTitle : changeCruiseSpeedTitle
     property string changeSpeedMessage: _vehicleInFwdFlight ? changeAirspeedMessage : changeCruiseSpeedMessage
@@ -175,6 +179,7 @@ Item {
     property bool   _fixedWingOnApproach:   _activeVehicle ? _activeVehicle.fixedWing && _vehicleLanding : false
     property bool   _vehicleInFwdFlight:    _activeVehicle ? _activeVehicle.inFwdFlight : false
     property bool  _speedLimitsAvailable:   _activeVehicle && ((_vehicleInFwdFlight && _activeVehicle.haveFWSpeedLimits) || (!_vehicleInFwdFlight && _activeVehicle.haveMRSpeedLimits))
+
 
     // You can turn on log output for GuidedActionsController by turning on GuidedActionsControllerLog category
     property bool __guidedModeSupported:    _activeVehicle ? _activeVehicle.supports.guidedMode : false
@@ -546,6 +551,12 @@ Item {
             confirmDialog.title = changeHeadingTitle
             confirmDialog.message = changeHeadingMessage
             break
+        // custom set target action
+        case actionSetTargetPoint:
+            confirmDialog.title = setTargetPointTitle
+            confirmDialog.message = setTargetPointMessage
+            confirmDialog.hideTrigger = Qt.binding(function() { return !showSetTargetPoint })
+            break
         default:
             if (!customController.customConfirmAction(actionCode, actionData, mapIndicator, confirmDialog)) {
                 console.warn("Unknown actionCode", actionCode)
@@ -690,6 +701,9 @@ Item {
             break
         case actionChangeHeading:
             _activeVehicle.guidedModeChangeHeading(actionData)
+            break
+            case actionSetTargetPoint:
+            _activeVehicle.doSetTargetPoint(actionData)
             break
         default:
             if (!customController.customExecuteAction(actionCode, actionData, sliderOutputValue, optionChecked)) {

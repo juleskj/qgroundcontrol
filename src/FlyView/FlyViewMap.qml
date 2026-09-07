@@ -301,6 +301,21 @@ FlightMap {
         }
     }
 
+// tagret point being set
+    MapQuickItem {
+        id:             targetPointItem
+        visible:        _activeVehicle && _activeVehicle.targetPointSet
+        coordinate:     _activeVehicle ? _activeVehicle.targetPointCoordinate : QtPositioning.coordinate()
+        anchorPoint.x:  sourceItem.width / 2
+        anchorPoint.y:  sourceItem.height
+
+        sourceItem: Rectangle {
+        width: 16; height: 16; radius: 8
+        color: "orange"
+        border.color: "black"; border.width: 1
+        }
+    }
+
     // Camera trigger points
     MapItemView {
         model: _activeVehicle ? _activeVehicle.cameraTriggerPoints : 0
