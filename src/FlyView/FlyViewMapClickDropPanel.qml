@@ -92,6 +92,17 @@ DropPanel {
                 }
             }
 
+        // new button to keep other buttons funcunality, like set home...
+            QGCButton {
+                Layout.fillWidth: true
+                text: qsTr("Set Target Point")
+                visible: root._guidedController.showSetTargetPoint
+                onClicked: {
+                    root.close()
+                    root._guidedController.confirmAction(root._guidedController.actionSetTargetPoint, root.mapClickCoord)
+                }
+            }
+
             QGCButton {
                 Layout.fillWidth: true
                 text: qsTr("Set home here")

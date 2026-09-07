@@ -1180,6 +1180,20 @@ void Vehicle::_handleBatteryStatus(mavlink_message_t& message)
         _say(QStringLiteral("%1 %2 ").arg(_vehicleIdSpeech()).arg(batteryMessage.arg(batteryIdStr)));
     }
 }
+void Vehicle::doSetTargetPoint(QGeoCoordinate targetCoordinate)
+{
+    setTargetPointCoordinate(targetCoordinate);
+}
+
+void Vehicle::setTargetPointCoordinate(const QGeoCoordinate& coordinate)
+{
+    if (_targetPointCoordinate == coordinate) {
+        return;
+    }
+
+    _targetPointCoordinate = coordinate;
+    emit targetPointCoordinateChanged(_targetPointCoordinate);
+}
 
 void Vehicle::_setHomePosition(QGeoCoordinate& homeCoord)
 {
