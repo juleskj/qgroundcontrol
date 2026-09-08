@@ -6,10 +6,13 @@
 #include "QGCPalette.h"
 #include "QGCMAVLink.h"
 #include "AppSettings.h"
+#include "CameraCalculator.h"
 
 #include <QtCore/QApplicationStatic>
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlFile>
+#include <QtQml/QQmlContext>
+
 
 QGC_LOGGING_CATEGORY(CustomLog, "Custom.CustomPlugin")
 
@@ -252,11 +255,19 @@ QQmlApplicationEngine* CustomPlugin::createQmlApplicationEngine(QObject* parent)
     _qmlEngine->addImportPath("qrc:/qml/Custom/Plan");
     // TODO: Investigate _qmlEngine->setExtraSelectors({"custom"})
 
+    _cameraCalculator = new CameraCalculator(_qmlEngine);
+
+    _qmlEngine->rootContext()->setContextProperty(
+        "CameraCalculator",
+        _cameraCalculator
+    );
+
     _urlInterceptor = new CustomOverrideInterceptor();
     _qmlEngine->addUrlInterceptor(_urlInterceptor);
 
     return _qmlEngine;
 }
+
 
 void CustomPlugin::destroyQmlApplicationEngine(QQmlApplicationEngine *qmlEngine)
 {
@@ -337,3 +348,5 @@ QList<PlanCreator *> CustomPlugin::planCreators(PlanMasterController *planMaster
     creators.append(new PerimeterScanPlanCreator(planMasterController));
     return creators;
 }
+
+/*===========================================================================*/

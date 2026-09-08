@@ -205,6 +205,8 @@ set(CUSTOM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MissionManager/PerimeterScanComplexItem.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MissionManager/PerimeterScanPlanCreator.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/MissionManager/PerimeterScanPlanCreator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CameraCalculator.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/CameraCalculator.h
     PARENT_SCOPE
 )
 

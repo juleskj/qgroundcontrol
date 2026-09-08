@@ -13,6 +13,8 @@ class CustomOptions;
 class CustomPlugin;
 class CustomSettings;
 class QQmlApplicationEngine;
+class CameraCalculator;
+
 
 Q_DECLARE_LOGGING_CATEGORY(CustomLog)
 
@@ -50,6 +52,7 @@ public:
 private:
     QGCCorePlugin *_plugin = nullptr;
     CustomFlyViewOptions *_flyViewOptions = nullptr;
+   
 };
 
 /*===========================================================================*/
@@ -95,6 +98,7 @@ private:
     QQmlApplicationEngine *_qmlEngine = nullptr;
     class CustomOverrideInterceptor *_urlInterceptor = nullptr;
     QVariantList _customSettingsList; // Not to be mixed up with QGCCorePlugin implementation
+    CameraCalculator* _cameraCalculator = nullptr;
 };
 
 /*===========================================================================*/
@@ -106,3 +110,5 @@ public:
 
     QUrl intercept(const QUrl &url, QQmlAbstractUrlInterceptor::DataType type) final;
 };
+
+

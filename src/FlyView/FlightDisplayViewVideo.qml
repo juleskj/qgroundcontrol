@@ -1,10 +1,12 @@
 import QtQuick
 import QtQuick.Controls
+import QtPositioning
 
 import QGroundControl
 import QGroundControl.FlyView
 import QGroundControl.FlightMap
 import QGroundControl.Controls
+
 
 Item {
     id:     root
@@ -31,12 +33,37 @@ Item {
     property bool   _isMode_FILL:       _fitMode === 2
     property bool   _isMode_NO_CROP:    _fitMode === 3
 
+    property real targetNormX: 0.5
+    property real targetNormY: 0.5
+    property bool targetVisible: false
+
+    
+    property real groundDistance: 0
+    property real distance: 0
+
+
+    property real altitudeMeters: _activeVehicle ? _activeVehicle.altitudeRelative.value * 0.3048 : 0
+
+
     function getWidth() {
         return videoBackground.getWidth()
     }
     function getHeight() {
         return videoBackground.getHeight()
     }
+
+    function pixelToGround(u, v, cameraHeight) {
+        var fx = 523.0
+        var fy = 596.0
+        var cx = 640.0
+        var cy = 480.0
+
+        var x = (u - cx) / fx * cameraHeight
+        var y = (v - cy) / fy * cameraHeight
+
+        return Qt.vector3d(x, y, 0)
+    }
+
 
     property double _thermalHeightFactor: 0.85 //-- TODO
 
@@ -108,6 +135,7 @@ Item {
             sourceComponent:    videoOutputComponent
 
             property bool videoDisabled: QGroundControl.settingsManager.videoSettings.videoSource.rawValue === QGroundControl.settingsManager.videoSettings.disabledVideoSource
+            
         }
         Component {
             id: videoOutputComponent
@@ -158,9 +186,148 @@ Item {
                     height: 1
                     y:      parent.height * 0.66
                 }
-            }
-        }
 
+            }
+                  // Target dot
+                    Rectangle {
+                        id: targetDot
+
+                        width: 12
+                        height: 12
+                        radius: width / 2
+
+                        color: "red"
+                        border.color: "white"
+                        border.width: 2
+
+                        visible: false
+                        z: 10000
+
+                        x: root.targetNormX * videoContentArea.width - width / 2
+                        y: root.targetNormY * videoContentArea.height - height / 2
+                    }
+
+                     // values
+                   Rectangle {
+                        id: targetValues
+
+                        width: 150
+                        height: 70
+
+                        radius: 6
+                        color: Qt.rgba(0, 0, 0, 0.75)
+                        border.color: "white"
+                        border.width: 1
+
+                        visible: targetDot.visible
+                        z: 9999
+
+                        x: {
+                            var proposedX = targetDot.x + targetDot.width + 10
+
+                            // Keep box inside video
+                            if (proposedX + width > videoContentArea.width) {
+                                proposedX = targetDot.x - width - 10
+                            }
+
+                            return Math.max(0, proposedX)
+                        }
+
+                        y: {
+                            var proposedY = targetDot.y
+
+                            // Keep box inside video
+                            if (proposedY + height > videoContentArea.height) {
+                                proposedY = videoContentArea.height - height
+                            }
+
+                            return Math.max(0, proposedY)
+                        }
+
+                        Column {
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 4
+
+                            QGCLabel {
+                                width: parent.width
+                                text: "Ground: " +
+                                    root.groundDistance.toFixed(2) + " m"
+                                color: "white"
+                                font.bold: true
+                                font.pointSize: ScreenTools.smallFontPointSize
+                            }
+
+                            QGCLabel {
+                                width: parent.width
+                                text: "Distance: " +
+                                    root.distance.toFixed(2) + " m"
+                                color: "white"
+                                font.pointSize: ScreenTools.smallFontPointSize
+                            }
+                            QGCLabel {
+                                width: parent.width
+                                text: "altitude: " +
+                                    altitudeMeters.toFixed(2) + " m"
+                                color: "white"
+                                font.pointSize: ScreenTools.smallFontPointSize
+                            }
+                        }
+                    }
+
+                    // Mouse/touch input
+                    TapHandler {
+                        id: targetSelector
+
+                        acceptedButtons: Qt.LeftButton
+                        grabPermissions: PointerHandler.CanTakeOverFromAnything
+
+                        onTapped: function(eventPoint) {
+
+                            // eventPoint.position is already relative to videoContentArea
+                            var x = eventPoint.position.x
+                            var y = eventPoint.position.y
+
+                            // Store normalized position
+                            root.targetNormX = x / videoContentArea.width
+                            root.targetNormY = y / videoContentArea.height
+
+                            targetDot.visible = true
+                            targetValues.visible = true
+
+                            console.log("Clicked:", x, y)
+                        
+                            var imageX = root.targetNormX * 3088.0
+                            var imageY = root.targetNormY * 2076.0
+
+                            root.groundDistance = CameraCalculator.calculateGroundDistance(
+                                imageX,
+                                imageY,
+                                altitudeMeters
+                            )
+
+                            console.log(groundDistance)
+
+                            root.distance = CameraCalculator.calculateDistanceToTarget(
+                                imageX,
+                                imageY,
+                                altitudeMeters
+                            )
+                            
+
+
+                          
+
+                        }
+
+                     
+
+
+                    }
+
+
+
+        }
         //-- Thermal Image
         Item {
             id:                 thermalItem
@@ -208,7 +375,7 @@ Item {
         //-- Zoom
         PinchArea {
             id:             pinchZoom
-            enabled:        _hasZoom
+            enabled:        false
             anchors.fill:   parent
             onPinchStarted: pinchZoom.zoom = 0
             onPinchUpdated: {
@@ -227,4 +394,8 @@ Item {
             property int zoom: 0
         }
     }
+   
+    
+
+    
 }
