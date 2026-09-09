@@ -92,3 +92,42 @@ double CameraCalculator::calculateDistanceToTarget(
         groundDistance * groundDistance
     );
 }
+
+QGeoCoordinate CameraCalculator::calculateTargetCoordinate(
+    double targetX,
+    double targetY,
+    double altitudeMeters,
+    const QGeoCoordinate &droneCoordinate,
+    double headingDegrees
+) const
+{
+    if (altitudeMeters <= 0.0 || !droneCoordinate.isValid()) {
+        return QGeoCoordinate();
+    }
+
+    const double cx = IMAGE_WIDTH  / 2.0;
+    const double cy = IMAGE_HEIGHT / 2.0;
+
+    const double nx = (targetX - cx) / cx;
+    const double ny = (targetY - cy) / cy;
+
+    const double halfHFov = qDegreesToRadians(HORIZONTAL_FOV_DEG / 2.0);
+    const double halfVFov = qDegreesToRadians(VERTICAL_FOV_DEG / 2.0);
+
+    const double rightOffset =
+        altitudeMeters * nx * qTan(halfHFov);
+
+    const double forwardOffset =
+        -altitudeMeters * ny * qTan(halfVFov);
+
+    const double groundDistance =
+        calculateGroundDistance(targetX, targetY, altitudeMeters);
+
+    const double relativeBearingDeg =
+        qRadiansToDegrees(qAtan2(rightOffset, forwardOffset));
+
+    double absoluteBearingDeg =
+        std::fmod(headingDegrees + relativeBearingDeg + 360.0, 360.0);
+
+    return droneCoordinate.atDistanceAndAzimuth(groundDistance, absoluteBearingDeg);
+}

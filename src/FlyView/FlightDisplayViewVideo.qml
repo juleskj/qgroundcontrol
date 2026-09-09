@@ -42,8 +42,7 @@ Item {
     property real distance: 0
 
 
-    property real altitudeMeters: _activeVehicle ? _activeVehicle.altitudeRelative.value * 0.3048 : 0
-
+    property real altitudeMeters: globals.activeVehicle ? globals.activeVehicle.altitudeRelative.value * 0.3048 : 0
 
     function getWidth() {
         return videoBackground.getWidth()
@@ -91,6 +90,52 @@ Item {
                 font.pointSize:     useSmallFont ? ScreenTools.smallFontPointSize : ScreenTools.largeFontPointSize
                 anchors.centerIn:   parent
             }
+
+        //test button
+        Item {
+            anchors.fill: parent
+            z: 100 
+            visible: true
+
+
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 10
+
+                    QGCLabel {
+                        text: "No video feed — test mode"
+                        color: "white"
+                    }
+
+                    Button {
+                        text: "Test Target Calculation"
+
+                        onClicked: {
+                            var testX = 1544.0     //  targetNormX
+                            var testY = 0.0        // targetNormY
+                           
+                            var droneHeading  = _activeVehicle ? _activeVehicle.heading.rawValue : 0.0
+                            var droneCoords = QtPositioning.coordinate(
+                                globals.activeVehicle.coordinate.latitude,
+                                globals.activeVehicle.coordinate.longitude
+                            )
+                            var result = CameraCalculator.calculateTargetCoordinate(
+                                testX, testY, altitudeMeters, droneCoords, droneHeading
+                            )
+
+                            console.log("Target coordinate:", result)
+                            console.log("Lat:", result.latitude, "Lon:", result.longitude)
+
+                            // same function to mame target point
+                            if (globals.activeVehicle && result.isValid) {
+                                globals.activeVehicle.doSetTargetPoint(result)
+                            }
+                        }
+                    }
+                }
+            }
+        
+
         }
 
     Rectangle {
@@ -328,6 +373,10 @@ Item {
 
 
         }
+        
+
+
+
         //-- Thermal Image
         Item {
             id:                 thermalItem
@@ -394,8 +443,8 @@ Item {
             property int zoom: 0
         }
     }
-   
     
+   
 
     
 }
