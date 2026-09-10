@@ -36,6 +36,7 @@ Item {
     property real targetNormX: 0.5
     property real targetNormY: 0.5
     property bool targetVisible: false
+    property var result: null
 
     
     property real groundDistance: 0
@@ -91,49 +92,7 @@ Item {
                 anchors.centerIn:   parent
             }
 
-        //test button
-        Item {
-            anchors.fill: parent
-            z: 100 
-            visible: true
-
-
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 10
-
-                    QGCLabel {
-                        text: "No video feed — test mode"
-                        color: "white"
-                    }
-
-                    Button {
-                        text: "Test Target Calculation"
-
-                        onClicked: {
-                            var testX = 1544.0     //  targetNormX
-                            var testY = 0.0        // targetNormY
-                           
-                            var droneHeading  = _activeVehicle ? _activeVehicle.heading.rawValue : 0.0
-                            var droneCoords = QtPositioning.coordinate(
-                                globals.activeVehicle.coordinate.latitude,
-                                globals.activeVehicle.coordinate.longitude
-                            )
-                            var result = CameraCalculator.calculateTargetCoordinate(
-                                testX, testY, altitudeMeters, droneCoords, droneHeading
-                            )
-
-                            console.log("Target coordinate:", result)
-                            console.log("Lat:", result.latitude, "Lon:", result.longitude)
-
-                            // same function to mame target point
-                            if (globals.activeVehicle && result.isValid) {
-                                globals.activeVehicle.doSetTargetPoint(result)
-                            }
-                        }
-                    }
-                }
-            }
+        
         
 
         }
@@ -257,7 +216,14 @@ Item {
                         id: targetValues
 
                         width: 150
-                        height: 70
+                        height: 100
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        implicitWidth: element.implicitWidth
+                        implicitHeight: element.implicitHeight
+
+                        anchors.left: videoContentArea.left
+                        anchors.bottom: videoContentArea.bottom
 
                         radius: 6
                         color: Qt.rgba(0, 0, 0, 0.75)
@@ -317,6 +283,13 @@ Item {
                                 color: "white"
                                 font.pointSize: ScreenTools.smallFontPointSize
                             }
+                            QGCLabel {
+                                width: parent.width
+                                text: "GEO coords: " + root.result
+                                wrapMode: Text.WordWrap
+                                color: "white"
+                                font.pointSize: ScreenTools.smallFontPointSize
+                            }
                         }
                     }
 
@@ -358,8 +331,24 @@ Item {
                                 imageY,
                                 altitudeMeters
                             )
-                            
+                                                     
+                           
+                            var droneHeading  = _activeVehicle ? _activeVehicle.heading.rawValue : 0.0
+                            var droneCoords = QtPositioning.coordinate(
+                                globals.activeVehicle.coordinate.latitude,
+                                globals.activeVehicle.coordinate.longitude
+                            )
+                            root.result = CameraCalculator.calculateTargetCoordinate(
+                                imageX, imageY, altitudeMeters, droneCoords, droneHeading
+                            )
 
+                            console.log("Target coordinate:", root.result)
+                            console.log("Lat:", root.result.latitude, "Lon:", root.result.longitude)
+
+                            // same function to mame target point
+                            if (globals.activeVehicle && root.result.isValid) {
+                                globals.activeVehicle.doSetTargetPoint(root.result)
+                            }
 
                           
 
