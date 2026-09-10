@@ -702,7 +702,7 @@ Item {
         case actionChangeHeading:
             _activeVehicle.guidedModeChangeHeading(actionData)
             break
-            case actionSetTargetPoint:
+        case actionSetTargetPoint:
             _activeVehicle.doSetTargetPoint(actionData)
             break
         default:

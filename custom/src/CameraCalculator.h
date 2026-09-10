@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject> 
+#include <QGeoCoordinate>
 
 class CameraCalculator : public QObject
 {
@@ -20,5 +21,15 @@ public:
         double targetY,
         double altitudeMeters
     ) const;
+
+    Q_INVOKABLE QGeoCoordinate calculateTargetCoordinate(
+        double targetX,
+        double targetY,
+        double altitudeMeters,
+        const QGeoCoordinate &droneCoordinate,
+        double headingDegrees
+    ) const;
+
+    
 };
 
