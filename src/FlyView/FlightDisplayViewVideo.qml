@@ -376,7 +376,6 @@ Item {
                                 imageY,
                                 altitudeMeters
                             )
-                                                     
                            
                             var droneHeading  = _activeVehicle ? _activeVehicle.heading.rawValue : 0.0
                             var droneCoords = QtPositioning.coordinate(
@@ -393,6 +392,10 @@ Item {
                             // same function to mame target point
                             if (globals.activeVehicle && root.result.isValid) {
                                 globals.activeVehicle.doSetTargetPoint(root.result)
+                                console.log("Sending target_relative")
+                                globals.activeVehicle.sendTargetRelative()
+                            } else {
+                                console.log("No active Vehicle")
                             }
                           
 
